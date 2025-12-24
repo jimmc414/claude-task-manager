@@ -1,55 +1,54 @@
 # tascli - Claude Code Integration
 
-This project includes Claude Code integration for task and reminder management.
+Claude-first task management. Use natural language or quick commands.
 
 ## Installation
 
-### Prerequisites
-- Rust toolchain (install via `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`)
-- Build tools (`sudo apt-get install build-essential` on Ubuntu/Debian)
-
-### Install tascli
 ```bash
-# From the project directory
+# From crates.io
+cargo install tascli
+
+# Or from source
 cargo install --path .
 
-# Or from crates.io
-cargo install tascli
+# Or via Homebrew
+brew tap Aperocky/tascli && brew install tascli
 ```
 
-### Verify installation
-```bash
-tascli --help
-```
+## Quick Commands
 
-## Claude Code Components
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/tasks` | Show open tasks | Overview of today/week |
+| `/task` | Quick add | `/task review PR tomorrow` |
+| `/done` | Mark complete | `/done 1` |
+| `/overdue` | Show overdue | What needs attention |
+| `/reminders` | Daily overview | Full task summary |
 
-### Agent: tascli
+## Natural Language
+
+Just talk to Claude. The tascli agent understands:
+
+- "What tasks do I have today?"
+- "Add a task to review the PR by Friday"
+- "Mark the first task done"
+- "Reschedule task 2 to next week"
+- "What did I complete today?"
+- "Show me everything overdue"
+
+## Agent: tascli
+
 Location: `.claude/agents/tascli.md`
 
-The tascli agent handles all task management operations. It is automatically invoked when you mention tasks, reminders, or todo items.
+Automatically invoked when you mention tasks, reminders, todo, deadlines, or schedules.
 
 **Capabilities:**
+- Natural language task management
 - Add tasks and records
 - Create recurring tasks (daily, weekly, monthly)
-- List and filter tasks by category, status, or date
-- Mark tasks complete
-- Update or delete items
-
-**Example prompts:**
-- "Add a task to review the quarterly report by Friday"
-- "Show me my overdue tasks"
-- "Mark task 3 as done"
-- "Add a recurring task for standup every weekday at 9am"
-
-### Command: /reminders
-Location: `.claude/commands/reminders.md`
-
-Invoke with `/reminders` to get a daily task overview showing:
-- Overdue tasks needing attention
-- Tasks due today
-- Tasks due this week
-- Pending recurring tasks
+- List and filter by category, status, or date
+- Mark tasks complete with optional notes
+- Reschedule or cancel tasks
 
 ## Data Storage
 
