@@ -25,6 +25,7 @@ brew tap Aperocky/tascli && brew install tascli
 | `/done` | Mark complete | `/done 1` |
 | `/overdue` | Show overdue | What needs attention |
 | `/reminders` | Daily overview | Full task summary |
+| `/work` | Work on task in project | `/work 3` |
 
 ## Natural Language
 
@@ -64,10 +65,13 @@ Configuration (optional): `~/.config/tascli/config.json`
 tascli task "description" [timestr] [-c category]
 tascli task "description" [timestr] -r        # With 7-day reminder
 tascli task "description" [timestr] -r 14     # With 14-day reminder
+tascli task "description" [timestr] -p myapp  # With project association
 tascli record "description" [-c category]
 ```
 
 **Reminder flag (-r):** Tasks appear in `/today` when within their reminder window, even if not yet due.
+
+**Project flag (-p):** Associate task with a project. Use `/work <index>` to open Claude in that project's directory.
 
 ### Time Formats
 - Relative: `today`, `tomorrow`, `next week`, `in 3 days`
@@ -106,3 +110,38 @@ tascli delete <index>                  # Delete item
 | open | 254 | ongoing + pending + suspended |
 | closed | 253 | done + cancelled + duplicate |
 | all | 255 | All statuses |
+
+## Project Configuration
+
+To use the `/work` command, define projects in `~/.config/tascli/config.json`:
+
+```json
+{
+  "terminal_profile": "Ubuntu",
+  "projects": {
+    "tascli": {
+      "path": "/mnt/c/python/tascli"
+    },
+    "myapp": {
+      "path": "/mnt/c/python/myapp",
+      "conda_env": "myapp-env",
+      "claude_flags": "--dangerously-skip-permissions"
+    }
+  }
+}
+```
+
+**Project options:**
+- `path` (required): Linux path to project directory
+- `conda_env`: Conda environment to activate
+- `claude_flags`: Additional Claude CLI flags
+- `prompt_template`: Custom prompt template (use `{content}` for task content)
+
+**Usage:**
+```bash
+# Add task with project
+tascli task "Fix login bug" friday -p myapp
+
+# Open Claude in project directory
+/work 3
+```

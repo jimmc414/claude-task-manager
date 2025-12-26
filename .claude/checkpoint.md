@@ -1,7 +1,7 @@
 # Checkpoint: tascli Project State
 
-**Date:** 2025-12-24
-**Last Commit:** `2cece8d` - feat: add reminder window for tasks (-r flag)
+**Date:** 2025-12-26
+**Last Commit:** `0a0257d` - feat: add project field to tasks
 
 ---
 
@@ -36,10 +36,11 @@
 
 ## Current Schema Version
 
-**Version 3** with columns:
+**Version 4** with columns:
 - id, action, category, content, create_time, target_time, modify_time, status
 - cron_schedule, human_schedule, recurring_task_id, good_until
-- reminder_days (new in v3)
+- reminder_days (v3)
+- project (v4) - links task to project in config
 
 ---
 

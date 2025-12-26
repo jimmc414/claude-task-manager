@@ -2,6 +2,7 @@ mod actions;
 mod args;
 mod config;
 mod db;
+mod utils;
 
 use std::process::exit;
 
