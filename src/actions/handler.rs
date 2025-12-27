@@ -5,6 +5,8 @@ use crate::{
         addition,
         list,
         modify,
+        namespace,
+        user,
     },
     args::parser::{
         Action,
@@ -14,9 +16,7 @@ use crate::{
     context::Context,
 };
 
-#[allow(unused_variables)]
 pub fn handle_commands(conn: &Connection, ctx: &Context, args: CliArgs) -> Result<(), String> {
-    // Note: ctx will be used in later phases for namespace/user filtering
     match args.arguments {
         Action::Task(cmd) => addition::handle_taskcmd(conn, &cmd),
         Action::Record(cmd) => addition::handle_recordcmd(conn, &cmd),
@@ -28,5 +28,7 @@ pub fn handle_commands(conn: &Connection, ctx: &Context, args: CliArgs) -> Resul
             ListCommand::Record(cmd) => list::handle_listrecords(conn, cmd),
             ListCommand::Show(cmd) => list::handle_showcontent(conn, cmd),
         },
+        Action::User(cmd) => user::handle_user_cmd(conn, ctx, cmd),
+        Action::Ns(cmd) => namespace::handle_namespace_cmd(conn, ctx, cmd),
     }
 }

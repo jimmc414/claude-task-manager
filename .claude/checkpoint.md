@@ -1,7 +1,7 @@
 # Checkpoint: Multi-Tenant CTM Implementation
 
 **Date:** 2025-12-26
-**Status:** Phases 1-2 COMPLETE, ready for Phase 3
+**Status:** Phases 1-3 COMPLETE, ready for Phase 4
 
 ---
 
@@ -25,7 +25,25 @@
 - Modified `src/main.rs` to resolve context after DB connect
 - Modified `src/actions/handler.rs` to accept `&Context` parameter
 
-**All 68 tests pass.**
+### Phase 3: User/Namespace Commands ✓
+- Created `src/db/user.rs` with User struct and CRUD operations
+- Created `src/db/namespace.rs` with Namespace, NamespaceMembership structs and CRUD
+- Created `src/actions/user.rs` with command handlers
+- Created `src/actions/namespace.rs` with command handlers
+- Added User and Ns subcommands to `src/args/parser.rs`
+- Commands implemented:
+  - `ctm user create <name> [-d "Display Name"]`
+  - `ctm user list`
+  - `ctm user delete <name>`
+  - `ctm ns create <name> [-d "description"]`
+  - `ctm ns list`
+  - `ctm ns delete <name>`
+  - `ctm ns switch <name>`
+  - `ctm ns add-user <ns> <user> [--role admin]`
+  - `ctm ns remove-user <ns> <user>`
+  - `ctm ns members [namespace]`
+
+**All 77 tests pass.**
 
 ---
 
@@ -50,7 +68,7 @@
 |-------|-------------|--------|
 | 1 | Schema v5 Migration | COMPLETE |
 | 2 | Identity Context System | COMPLETE |
-| 3 | User/Namespace Commands | Not started |
+| 3 | User/Namespace Commands | COMPLETE |
 | 4 | Task Enhancements | Not started |
 | 5 | Notes/Show/Claim/Link | Not started |
 | 6 | Reporting Commands | Not started |
@@ -62,8 +80,12 @@
 ## Files Created
 
 ```
-src/context/mod.rs        # Context module export
-src/context/identity.rs   # Context struct + resolution logic
+src/context/mod.rs          # Context module export
+src/context/identity.rs     # Context struct + resolution logic
+src/db/user.rs              # User struct + CRUD operations
+src/db/namespace.rs         # Namespace struct + CRUD operations
+src/actions/user.rs         # User command handlers
+src/actions/namespace.rs    # Namespace command handlers
 ```
 
 ## Files Modified
@@ -72,9 +94,11 @@ src/context/identity.rs   # Context struct + resolution logic
 src/db/conn.rs           # Schema v5 migration + auto-setup
 src/db/item.rs           # Item struct with new fields
 src/db/crud.rs           # insert_item/update_item with new fields
-src/args/parser.rs       # --as and --ns global flags
+src/db/mod.rs            # Export user and namespace modules
+src/args/parser.rs       # --as and --ns global flags + User/Ns subcommands
 src/main.rs              # Context resolution after DB connect
-src/actions/handler.rs   # Accept &Context parameter
+src/actions/handler.rs   # Route User/Ns commands
+src/actions/mod.rs       # Export user and namespace modules
 ```
 
 ---
@@ -103,8 +127,9 @@ audit_log (id, item_id, table_name, action, field_name, old_value, new_value, cr
 
 ## Next Action
 
-Start Phase 3: User/Namespace Commands
-- Create `src/db/user.rs` and `src/db/namespace.rs`
-- Create `src/actions/user.rs` and `src/actions/namespace.rs`
-- Add `User` and `Ns` subcommands to parser
-- Route in handler
+Start Phase 4: Task Enhancements
+- Add `src/args/priority.rs` - Parse high/normal/low
+- Add `src/args/estimate.rs` - Parse 2h/30m/1h30m
+- Modify `src/args/parser.rs` - Add -P, -e, --for, --from-issue flags to TaskCommand
+- Modify `src/db/crud.rs` - Add assignee/namespace filtering to query_items
+- Modify `src/actions/addition.rs` - Handle priority, estimate, assignee

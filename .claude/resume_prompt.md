@@ -6,7 +6,7 @@ Use this prompt to resume work after context compaction.
 
 ## Context
 
-I'm implementing a major feature set for claude-task-manager (ctm), a Rust CLI task manager. **Phases 1-2 are complete, ready for Phase 3.**
+I'm implementing a major feature set for claude-task-manager (ctm), a Rust CLI task manager. **Phases 1-3 are complete, ready for Phase 4.**
 
 **Project location:** `/mnt/c/python/claude-task-manager`
 
@@ -16,14 +16,14 @@ I'm implementing a major feature set for claude-task-manager (ctm), a Rust CLI t
 |-------|-------------|--------|
 | 1 | Schema v5 Migration | COMPLETE |
 | 2 | Identity Context System | COMPLETE |
-| 3 | User/Namespace Commands | **NEXT** |
-| 4 | Task Enhancements | Not started |
+| 3 | User/Namespace Commands | COMPLETE |
+| 4 | Task Enhancements | **NEXT** |
 | 5 | Notes/Show/Claim/Link | Not started |
 | 6 | Reporting Commands | Not started |
 | 7 | GitHub Integration | Not started |
 | 8 | /work + /standup | Not started |
 
-**All 68 tests pass.**
+**All 77 tests pass.**
 
 ## What Was Completed
 
@@ -38,6 +38,13 @@ I'm implementing a major feature set for claude-task-manager (ctm), a Rust CLI t
 - Global `--as` and `--ns` CLI flags added
 - Files: `src/context/mod.rs`, `src/context/identity.rs`, `src/main.rs`, `src/actions/handler.rs`, `src/args/parser.rs`
 
+### Phase 3: User/Namespace Commands
+- User struct + CRUD: `src/db/user.rs`
+- Namespace struct + CRUD: `src/db/namespace.rs`
+- User command handlers: `src/actions/user.rs`
+- Namespace command handlers: `src/actions/namespace.rs`
+- Commands: `ctm user create/list/delete`, `ctm ns create/list/delete/switch/add-user/remove-user/members`
+
 ## Key Files
 
 - **Full plan:** `/home/jim/.claude/plans/modular-fluttering-aurora.md`
@@ -51,13 +58,12 @@ I'm implementing a major feature set for claude-task-manager (ctm), a Rust CLI t
 
 ```
 1. Read checkpoint: .claude/checkpoint.md
-2. Start Phase 3: User/Namespace Commands
-   - Create src/db/user.rs (User struct, CRUD)
-   - Create src/db/namespace.rs (Namespace struct, CRUD)
-   - Create src/actions/user.rs (command handlers)
-   - Create src/actions/namespace.rs (command handlers)
-   - Add User and Ns subcommands to src/args/parser.rs
-   - Route in src/actions/handler.rs
+2. Start Phase 4: Task Enhancements
+   - Add src/args/priority.rs (parse high/normal/low)
+   - Add src/args/estimate.rs (parse 2h/30m/1h30m)
+   - Modify src/args/parser.rs - Add -P, -e, --for, --from-issue flags
+   - Modify src/db/crud.rs - Add assignee/namespace filtering
+   - Modify src/actions/addition.rs - Handle priority, estimate, assignee
 ```
 
 ## Design Decisions (Don't Re-Ask)
@@ -73,21 +79,15 @@ I'm implementing a major feature set for claude-task-manager (ctm), a Rust CLI t
 - Future-proof for concurrent access (proper IDs, audit trails)
 - Reports support --json and --md output flags
 
-## Phase 3 Commands to Implement
+## Phase 4 Commands to Implement
 
 ```bash
-# User management
-ctm user create <name> [--display-name "Full Name"]
-ctm user list
-ctm user delete <name>
+# Task creation with enhancements
+ctm task "description" [timestr] [-P high|normal|low] [-e 2h] [--for user]
+ctm task --from-issue owner/repo#42  # Create from GitHub issue
 
-# Namespace management
-ctm ns create <name> [--description "desc"]
-ctm ns list
-ctm ns delete <name>
-ctm ns switch <name>           # Set default in config
-ctm ns add-user <ns> <user> [--role admin]
-ctm ns remove-user <ns> <user>
+# Task listing with filters
+ctm list task [--user sarah] [--all-users]
 ```
 
 ## Global Flags (Already Implemented)

@@ -39,6 +39,12 @@ pub enum Action {
     /// list tasks or records
     #[command(subcommand)]
     List(ListCommand),
+    /// manage users
+    #[command(subcommand)]
+    User(UserCommand),
+    /// manage namespaces
+    #[command(subcommand)]
+    Ns(NamespaceCommand),
 }
 
 #[derive(Debug, Args)]
@@ -203,6 +209,95 @@ pub struct ShowContentCommand {
     /// index from previous list command
     #[arg(value_parser = validate_index)]
     pub index: usize,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum UserCommand {
+    /// create a new user
+    Create(UserCreateCommand),
+    /// list all users
+    List,
+    /// delete a user
+    Delete(UserDeleteCommand),
+}
+
+#[derive(Debug, Args)]
+pub struct UserCreateCommand {
+    /// username (unique identifier)
+    pub name: String,
+    /// display name for the user
+    #[arg(short = 'd', long = "display-name")]
+    pub display_name: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct UserDeleteCommand {
+    /// username to delete
+    pub name: String,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum NamespaceCommand {
+    /// create a new namespace
+    Create(NamespaceCreateCommand),
+    /// list all namespaces
+    List,
+    /// delete a namespace
+    Delete(NamespaceDeleteCommand),
+    /// switch default namespace
+    Switch(NamespaceSwitchCommand),
+    /// add a user to a namespace
+    AddUser(NamespaceAddUserCommand),
+    /// remove a user from a namespace
+    RemoveUser(NamespaceRemoveUserCommand),
+    /// list members of a namespace
+    Members(NamespaceMembersCommand),
+}
+
+#[derive(Debug, Args)]
+pub struct NamespaceCreateCommand {
+    /// namespace name (unique identifier)
+    pub name: String,
+    /// description of the namespace
+    #[arg(short = 'd', long)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct NamespaceDeleteCommand {
+    /// namespace name to delete
+    pub name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct NamespaceSwitchCommand {
+    /// namespace name to switch to
+    pub name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct NamespaceAddUserCommand {
+    /// namespace name
+    pub namespace: String,
+    /// username to add
+    pub user: String,
+    /// role for the user (owner, admin, member, viewer)
+    #[arg(short, long, default_value = "member")]
+    pub role: String,
+}
+
+#[derive(Debug, Args)]
+pub struct NamespaceRemoveUserCommand {
+    /// namespace name
+    pub namespace: String,
+    /// username to remove
+    pub user: String,
+}
+
+#[derive(Debug, Args)]
+pub struct NamespaceMembersCommand {
+    /// namespace name (defaults to current namespace)
+    pub namespace: Option<String>,
 }
 
 fn syntax_helper(cmd: &str, s: &str) -> Result<String, String> {
