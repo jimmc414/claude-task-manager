@@ -57,6 +57,12 @@ pub enum Action {
     /// manage namespaces
     #[command(subcommand)]
     Ns(NamespaceCommand),
+    /// show team task distribution
+    Team(TeamCommand),
+    /// show workload by user
+    Workload(WorkloadCommand),
+    /// show task statistics
+    Stats(StatsCommand),
 }
 
 #[derive(Debug, Args)]
@@ -370,6 +376,42 @@ pub struct LinkCommand {
     /// optional title for the link
     #[arg(short, long)]
     pub title: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct TeamCommand {
+    /// output as JSON
+    #[arg(long)]
+    pub json: bool,
+    /// output as Markdown
+    #[arg(long)]
+    pub md: bool,
+}
+
+#[derive(Debug, Args)]
+pub struct WorkloadCommand {
+    /// filter to specific user
+    #[arg(short, long)]
+    pub user: Option<String>,
+    /// output as JSON
+    #[arg(long)]
+    pub json: bool,
+    /// output as Markdown
+    #[arg(long)]
+    pub md: bool,
+}
+
+#[derive(Debug, Args)]
+pub struct StatsCommand {
+    /// time period in days (default 30)
+    #[arg(short, long, default_value_t = 30)]
+    pub days: i64,
+    /// output as JSON
+    #[arg(long)]
+    pub json: bool,
+    /// output as Markdown
+    #[arg(long)]
+    pub md: bool,
 }
 
 fn syntax_helper(cmd: &str, s: &str) -> Result<String, String> {

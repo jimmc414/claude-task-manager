@@ -7,5 +7,6 @@ pub mod list;
 pub mod modify;
 pub mod namespace;
 pub mod note;
+pub mod reporting;
 pub mod show;
 pub mod user;

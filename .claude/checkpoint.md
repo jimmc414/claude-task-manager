@@ -1,36 +1,32 @@
 # Checkpoint: Multi-Tenant CTM Implementation
 
 **Date:** 2025-12-27
-**Status:** Phases 1-5 COMPLETE, ready for Phase 6
+**Status:** Phases 1-6 COMPLETE, ready for Phase 7
 
 ---
 
 ## Completed This Session
 
-### Phase 5: Notes/Show/Claim/Link ✓
-- Created `src/db/note.rs` - TaskNote struct + CRUD operations
-- Created `src/db/link.rs` - TaskLink struct + CRUD operations
-- Created `src/actions/note.rs` - Note command handler
-- Created `src/actions/show.rs` - Detailed view with priority, status, notes, links
-- Created `src/actions/claim.rs` - Take ownership of unassigned tasks
-- Created `src/actions/link.rs` - Attach commits, issues, PRs, URLs to tasks
-- Updated `src/db/mod.rs` to export note and link modules
-- Updated `src/actions/mod.rs` to export new modules
-- Added NoteCommand, ShowCommand, ClaimCommand, LinkCommand to parser.rs
-- Updated handler.rs to route new commands
+### Phase 6: Reporting Commands ✓
+- Created `src/actions/reporting.rs` - Team, workload, stats handlers
+- Added TeamCommand, WorkloadCommand, StatsCommand to `src/args/parser.rs`
+- Added routing in `src/actions/handler.rs` for new commands
+- Added serde_json dependency to `Cargo.toml`
+- Exported reporting module in `src/actions/mod.rs`
 
 **New commands:**
 ```bash
-ctm note <index> "note text"     # Append timestamped note
-ctm show <index>                 # Detailed view with notes/links
-ctm claim <index>                # Take ownership of unassigned task
-ctm link <index> --issue owner/repo#42
-ctm link <index> --pr owner/repo#43
-ctm link <index> --commit abc123
-ctm link <index> --url https://... -t "Title"
+ctm team [--json] [--md]         # Who has what tasks
+ctm workload [--user sarah]      # Hours per person
+ctm stats [--days 30]            # Completion rates, overdue
 ```
 
-**All 124 tests pass.**
+**Output formats:**
+- Default: Colored text tables
+- `--json`: Machine-readable JSON
+- `--md`: Markdown tables
+
+**All 133 tests pass.**
 
 ---
 
@@ -40,51 +36,29 @@ ctm link <index> --url https://... -t "Title"
 - Updated `SCHEMA_VERSION` from 4 to 5 in `src/db/conn.rs`
 - Created 6 new tables: `users`, `namespaces`, `user_namespaces`, `task_links`, `task_notes`, `audit_log`
 - Added 6 new columns to `items`: `owner_id`, `assignee_id`, `namespace_id`, `priority`, `estimate_minutes`, `github_issue`
-- Added indexes: `idx_owner_id`, `idx_assignee_id`, `idx_namespace_id`, `idx_priority`, `idx_task_links_item_id`, `idx_task_notes_item_id`, `idx_audit_log_item_id`
 - Implemented `setup_default_user_and_namespace()` for auto-setup on first run
-- Updated `Item` struct in `src/db/item.rs` with new fields
-- Updated `insert_item()` and `update_item()` in `src/db/crud.rs`
 
 ### Phase 2: Identity Context System ✓
 - Created `src/context/mod.rs` and `src/context/identity.rs`
-- Implemented `Context` struct with identity resolution:
-  - User: `--as` flag → `CTM_USER` env → `USER` env → "default"
-  - Namespace: `--ns` flag → `CTM_NAMESPACE` env → "default"
+- Implemented `Context` struct with identity resolution
 - Added global `--as` and `--ns` flags to `src/args/parser.rs`
-- Modified `src/main.rs` to resolve context after DB connect
-- Modified `src/actions/handler.rs` to accept `&Context` parameter
 
 ### Phase 3: User/Namespace Commands ✓
 - Created `src/db/user.rs` with User struct and CRUD operations
 - Created `src/db/namespace.rs` with Namespace, NamespaceMembership structs and CRUD
-- Created `src/actions/user.rs` with command handlers
-- Created `src/actions/namespace.rs` with command handlers
-- Added User and Ns subcommands to `src/args/parser.rs`
-- Commands implemented:
-  - `ctm user create <name> [-d "Display Name"]`
-  - `ctm user list`
-  - `ctm user delete <name>`
-  - `ctm ns create <name> [-d "description"]`
-  - `ctm ns list`
-  - `ctm ns delete <name>`
-  - `ctm ns switch <name>`
-  - `ctm ns add-user <ns> <user> [--role admin]`
-  - `ctm ns remove-user <ns> <user>`
-  - `ctm ns members [namespace]`
+- Created `src/actions/user.rs` and `src/actions/namespace.rs` with command handlers
+- Commands: `ctm user create/list/delete`, `ctm ns create/list/delete/switch/add-user/remove-user/members`
 
 ### Phase 4: Task Enhancements ✓
-- Created `src/args/priority.rs` - Parse high/normal/low to 0/1/2
-- Created `src/args/estimate.rs` - Parse 2h/30m/1h30m to minutes
-- Updated `src/args/mod.rs` to export new modules
-- Added `-P`, `-e`, `--for` flags to TaskCommand in parser.rs
+- Created `src/args/priority.rs` and `src/args/estimate.rs`
+- Added `-P`, `-e`, `--for` flags to TaskCommand
 - Added `-u/--user` and `--all-users` flags to ListTaskCommand
-- Updated ItemQuery with assignee_id, owner_id, namespace_id filters
-- Updated crud.rs query_items to filter by assignee/owner/namespace
-- Updated addition.rs to handle priority, estimate, assignee (resolved to user ID)
-- Updated list/tasks.rs to resolve and pass user filter to query functions
-- Tasks now store owner_id, assignee_id, namespace_id, priority, estimate_minutes
+- Tasks now store: owner_id, assignee_id, namespace_id, priority, estimate_minutes
 
-**All 87 tests pass.**
+### Phase 5: Notes/Show/Claim/Link ✓
+- Created `src/db/note.rs` and `src/db/link.rs`
+- Created `src/actions/note.rs`, `src/actions/show.rs`, `src/actions/claim.rs`, `src/actions/link.rs`
+- Commands: `ctm note`, `ctm show`, `ctm claim`, `ctm link`
 
 ---
 
@@ -99,7 +73,7 @@ ctm link <index> --url https://... -t "Title"
 | Task ownership | owner_id (accountable) + assignee_id (working on it) |
 | Roles | Per-namespace (owner/admin/member/viewer) |
 | GitHub integration | Use `gh` CLI wrapper (not HTTP API) |
-| Future-proofing | Design for concurrent access later |
+| Reports | Support --json and --md output flags |
 
 ---
 
@@ -112,45 +86,25 @@ ctm link <index> --url https://... -t "Title"
 | 3 | User/Namespace Commands | COMPLETE |
 | 4 | Task Enhancements | COMPLETE |
 | 5 | Notes/Show/Claim/Link | COMPLETE |
-| 6 | Reporting Commands | Not started |
+| 6 | Reporting Commands | COMPLETE |
 | 7 | GitHub Integration | Not started |
 | 8 | /work + /standup | Not started |
 
 ---
 
-## Files Created
+## Files Created in Phase 6
 
 ```
-src/context/mod.rs          # Context module export
-src/context/identity.rs     # Context struct + resolution logic
-src/db/user.rs              # User struct + CRUD operations
-src/db/namespace.rs         # Namespace struct + CRUD operations
-src/db/note.rs              # TaskNote struct + CRUD operations
-src/db/link.rs              # TaskLink struct + CRUD operations
-src/actions/user.rs         # User command handlers
-src/actions/namespace.rs    # Namespace command handlers
-src/actions/note.rs         # Note command handler
-src/actions/show.rs         # Detailed view handler
-src/actions/claim.rs        # Claim command handler
-src/actions/link.rs         # Link command handler
-src/args/priority.rs        # Priority parsing (high/normal/low)
-src/args/estimate.rs        # Estimate parsing (2h/30m/1h30m)
+src/actions/reporting.rs        # Team, workload, stats handlers
 ```
 
-## Files Modified
+## Files Modified in Phase 6
 
 ```
-src/db/conn.rs              # Schema v5 migration + auto-setup
-src/db/item.rs              # Item struct with new fields + ItemQuery filters
-src/db/crud.rs              # insert_item/update_item + assignee filtering
-src/db/mod.rs               # Export user and namespace modules
-src/args/parser.rs          # --as, --ns flags + User/Ns + -P/-e/--for/--user
-src/args/mod.rs             # Export priority and estimate modules
-src/main.rs                 # Context resolution after DB connect
-src/actions/handler.rs      # Route User/Ns commands + pass ctx to task
-src/actions/mod.rs          # Export user and namespace modules
-src/actions/addition.rs     # Handle priority, estimate, assignee on task creation
-src/actions/list/tasks.rs   # User filter support for listing tasks
+src/args/parser.rs              # Added TeamCommand, WorkloadCommand, StatsCommand
+src/actions/handler.rs          # Route new commands
+src/actions/mod.rs              # Export reporting module
+Cargo.toml                      # Added serde_json dependency
 ```
 
 ---
@@ -179,10 +133,8 @@ audit_log (id, item_id, table_name, action, field_name, old_value, new_value, cr
 
 ## Next Action
 
-Start Phase 6: Reporting Commands
-- Create `src/actions/stats.rs` - Team, workload, stats handlers
-- Create `src/actions/display/json.rs` - JSON output support
-- Create `src/actions/display/markdown.rs` - Markdown output support
-- Add `ctm team [--json] [--md]` - Who has what tasks
-- Add `ctm workload [--user sarah]` - Hours per person
-- Add `ctm stats` - Completion rates, overdue analysis
+Start Phase 7: GitHub Integration
+- Create `src/github/mod.rs` - Module structure
+- Create `src/github/api.rs` - gh CLI wrapper
+- Add `--from-issue` flag to task command
+- Add `--close-issue` flag to done command

@@ -9,6 +9,7 @@ use crate::{
         modify,
         namespace,
         note,
+        reporting,
         show,
         user,
     },
@@ -38,5 +39,8 @@ pub fn handle_commands(conn: &Connection, ctx: &Context, args: CliArgs) -> Resul
         Action::Link(cmd) => link::handle_linkcmd(conn, ctx, &cmd),
         Action::User(cmd) => user::handle_user_cmd(conn, ctx, cmd),
         Action::Ns(cmd) => namespace::handle_namespace_cmd(conn, ctx, cmd),
+        Action::Team(cmd) => reporting::handle_team(conn, ctx, &cmd),
+        Action::Workload(cmd) => reporting::handle_workload(conn, ctx, &cmd),
+        Action::Stats(cmd) => reporting::handle_stats(conn, ctx, &cmd),
     }
 }
