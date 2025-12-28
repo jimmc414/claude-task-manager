@@ -48,6 +48,136 @@ Or just talk naturally:
 - "Mark the first task done"
 - "Create a task from issue owner/repo#42"
 
+---
+
+## Claude Code Integration
+
+This project includes comprehensive Claude Code integration with agents, slash commands, hooks, and context skills. All integrations are **project-scoped** (stored in `.claude/`) and only active when working in this project.
+
+### Agents
+
+Agents are automatically invoked based on conversation context.
+
+| Agent | File | Purpose | Triggers |
+|-------|------|---------|----------|
+| **ctm** | `.claude/agents/ctm.md` | Task management via natural language | "tasks", "todo", "reminders", "deadline", "overdue" |
+| **repo** | `.claude/agents/repo.md` | Development assistance for this codebase | "how does X work?", "where to add?", architecture questions |
+
+**Examples:**
+```
+"What tasks do I have today?"          → ctm agent
+"How do I add a new command?"          → repo agent
+"Show me the team workload"            → ctm agent
+"Where is the database code?"          → repo agent
+```
+
+### Slash Commands (16)
+
+All commands are in `.claude/commands/`.
+
+#### Core Task Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/today` | Today's tasks + overdue items | Quick daily view |
+| `/tasks` | All open tasks | Full overview |
+| `/task` | Quick add task | `/task review PR tomorrow -P high` |
+| `/done` | Mark task complete | `/done 1 -c "fixed in PR #42"` |
+| `/overdue` | Show overdue tasks | What needs attention |
+| `/status` | Quick health check | Overdue count + priorities |
+
+#### Task Details Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/show` | Detailed task view | `/show 3` - notes, links, history |
+| `/note` | Add note to task | `/note 3 "found root cause"` |
+| `/claim` | Claim unassigned task | `/claim 5` |
+
+#### Project & Workflow Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/work` | Open Claude in project directory | `/work 3` - with full task context |
+| `/standup` | Generate standup report | Yesterday/Today/Blockers format |
+| `/reminders` | Full task summary | Daily overview |
+
+#### Team & Reporting Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/team` | Team task distribution | Who has what tasks |
+| `/workload` | Estimated hours per person | `/workload --user sarah` |
+| `/stats` | Completion statistics | `/stats --days 7` |
+
+#### Context Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/repo` | Re-inject project context | Use when Claude loses context |
+
+### Hooks
+
+Hooks are configured in `.claude/settings.json` and run automatically on events.
+
+| Hook | Event | What it Does |
+|------|-------|--------------|
+| **SessionStart** | Session start/resume | Shows overdue tasks and today's tasks |
+
+**SessionStart Hook Output:**
+```
+📋 Task Overview
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  OVERDUE:
+[list of overdue tasks]
+
+📅 TODAY:
+[list of tasks due today]
+```
+
+This runs automatically when you:
+- Start a new Claude Code session in this project
+- Resume an existing session
+- After `/clear` or context compaction
+
+### Context Persistence
+
+Claude Code context can be lost during long sessions or compaction. This project addresses that with:
+
+| Mechanism | When to Use |
+|-----------|-------------|
+| `.claude/CLAUDE.md` | Auto-loaded at session start (may get summarized) |
+| `/repo` command | On-demand context re-injection (survives compaction) |
+| `repo` agent | Automatic for architecture questions |
+
+**If Claude seems confused about the project, run `/repo` to refresh context.**
+
+### File Structure
+
+```
+.claude/
+├── CLAUDE.md              # Auto-loaded project documentation
+├── settings.json          # Hooks configuration
+├── agents/
+│   ├── ctm.md             # Task management agent
+│   └── repo.md            # Development assistance agent
+└── commands/
+    ├── today.md           # /today command
+    ├── tasks.md           # /tasks command
+    ├── task.md            # /task command
+    ├── done.md            # /done command
+    ├── overdue.md         # /overdue command
+    ├── status.md          # /status command
+    ├── show.md            # /show command
+    ├── note.md            # /note command
+    ├── claim.md           # /claim command
+    ├── work.md            # /work command
+    ├── standup.md         # /standup command
+    ├── reminders.md       # /reminders command
+    ├── team.md            # /team command
+    ├── workload.md        # /workload command
+    ├── stats.md           # /stats command
+    └── repo.md            # /repo command (context refresh)
+```
+
+---
+
 ## Core Features
 
 ### Task Management
@@ -205,6 +335,8 @@ ctm record -c meetings "Sprint planning - decided on Q1 priorities"
 ctm list record -d 7    # Last 7 days
 ```
 
+---
+
 ## Time Formats
 
 | Format | Examples |
@@ -298,29 +430,6 @@ Global Options:
 |----------|-------------|
 | `CTM_USER` | Default user (fallback: system $USER) |
 | `CTM_NAMESPACE` | Default namespace (fallback: "default") |
-
-## Claude Code Integration
-
-This tool is designed to work with Claude Code's agent system. The integration includes:
-
-- **ctm agent** (`.claude/agents/ctm.md`) - Natural language task management
-- **Quick commands** (`.claude/commands/`) - `/today`, `/tasks`, `/task`, `/done`, `/work`, `/standup`, etc.
-- **Project documentation** (`.claude/CLAUDE.md`) - Full integration guide
-
-When you mention tasks, todos, deadlines, or reminders in Claude Code, the ctm agent is automatically invoked.
-
-### Slash Commands
-
-| Command | Description |
-|---------|-------------|
-| `/today` | Today's tasks + overdue |
-| `/tasks` | Open tasks overview |
-| `/task <desc> <time>` | Quick add task |
-| `/done <index>` | Complete task |
-| `/overdue` | Overdue items |
-| `/work <index>` | Open Claude in project with task context |
-| `/standup` | Generate daily standup |
-| `/reminders` | Full task summary |
 
 ## Data Storage
 
