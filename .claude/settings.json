@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo ''; echo '📋 Task Overview'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; overdue=$(ctm list task --overdue -s open 2>/dev/null); if [ -n \"$overdue\" ]; then echo ''; echo '⚠️  OVERDUE:'; echo \"$overdue\"; fi; today=$(ctm list task -d 1 -s open 2>/dev/null); if [ -n \"$today\" ]; then echo ''; echo '📅 TODAY:'; echo \"$today\"; fi; if [ -z \"$overdue\" ] && [ -z \"$today\" ]; then echo ''; echo '✅ No overdue or tasks due today'; fi; echo ''"
+          }
+        ]
+      }
+    ]
+  }
+}

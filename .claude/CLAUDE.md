@@ -188,17 +188,10 @@ To use the `/work` command, define projects in `~/.config/ctm/config.json`:
 - `claude_flags`: Additional Claude CLI flags
 - `prompt_template`: Custom prompt template (use `{content}` for task content)
 
-## Recommended Hooks
+## Session Start Hook
 
-Add to your Claude Code settings for automatic task reminders:
+This project includes a SessionStart hook (`.claude/settings.json`) that automatically shows:
+- Overdue tasks needing attention
+- Tasks due today
 
-```json
-{
-  "hooks": {
-    "session_start": {
-      "command": "ctm list task --overdue -s open 2>/dev/null | head -5",
-      "show_output": true
-    }
-  }
-}
-```
+The hook runs when you start or resume a Claude Code session in this project.
