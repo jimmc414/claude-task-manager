@@ -24,7 +24,15 @@ A fast, local CLI that integrates seamlessly with [Claude Code](https://docs.ant
 # From crates.io
 cargo install claude-task-manager
 
-# The CLI command is 'ctm'
+# Or from source
+git clone https://github.com/jimmc414/claude-task-manager
+cd claude-task-manager
+cargo install --path .
+```
+
+The CLI command is `ctm`:
+
+```bash
 ctm task "My first task" today
 ```
 
