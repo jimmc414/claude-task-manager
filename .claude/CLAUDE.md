@@ -1,6 +1,6 @@
 # claude-task-manager - Claude Code Integration
 
-Claude-first task management. Use natural language or quick commands.
+Claude-first task management with multi-tenant support. Use natural language or quick commands.
 
 ## Installation
 
@@ -14,29 +14,51 @@ ctm task "My first task" today
 
 ## Quick Commands
 
+### Core Commands
 | Command | Purpose | Example |
 |---------|---------|---------|
 | `/today` | Today's tasks + overdue | Quick daily view |
 | `/tasks` | Show open tasks | Overview of today/week |
-| `/task` | Quick add | `/task review PR tomorrow` |
+| `/task` | Quick add | `/task review PR tomorrow -P high` |
 | `/done` | Mark complete | `/done 1` |
 | `/overdue` | Show overdue | What needs attention |
-| `/reminders` | Daily overview | Full task summary |
-| `/work` | Work on task in project | `/work 3` |
-| `/standup` | Generate standup report | Yesterday/Today/Blockers |
+| `/status` | Quick health check | Overdue + priorities |
+
+### Task Details
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/show` | Detailed task view | `/show 3` |
+| `/note` | Add note to task | `/note 3 "found root cause"` |
+| `/claim` | Claim unassigned task | `/claim 5` |
+
+### Project & Work
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/work` | Open Claude in project | `/work 3` |
+| `/standup` | Generate standup | Yesterday/Today/Blockers |
+
+### Team & Reporting
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/team` | Team task distribution | Who has what |
+| `/workload` | Hours per person | Capacity planning |
+| `/stats` | Completion statistics | Last 30 days |
+| `/reminders` | Full task summary | Daily overview |
 
 ## Natural Language
 
 Just talk to Claude. The ctm agent understands:
 
 - "What tasks do I have today?"
-- "Add a task to review the PR by Friday"
+- "Add a high priority task to review the PR by Friday"
 - "Mark the first task done"
 - "Reschedule task 2 to next week"
 - "What did I complete today?"
 - "Show me everything overdue"
 - "Add a task for the myapp project"
-- "Assign task 2 to myapp project"
+- "Assign task 2 to sarah"
+- "Show me the team workload"
+- "Create a task from issue owner/repo#42"
 - "Work on the first task" (uses `/work` if task has a project)
 
 ## Agent: ctm
@@ -47,13 +69,12 @@ Automatically invoked when you mention tasks, reminders, todo, deadlines, or sch
 
 **Capabilities:**
 - Natural language task management
-- Add tasks and records
-- Create recurring tasks (daily, weekly, monthly)
-- List and filter by category, status, or date
-- Mark tasks complete with optional notes
-- Reschedule or cancel tasks
-- Link tasks to projects for `/work` command
-- Open Claude sessions in project directories
+- Priority and time estimates
+- Notes and progress tracking
+- Team assignment and workload
+- GitHub integration (issues, PRs)
+- Project-aware Claude sessions
+- Reporting (team, workload, stats)
 
 ## Data Storage
 
@@ -66,29 +87,31 @@ Configuration (optional): `~/.config/ctm/config.json`
 ### Adding Items
 ```bash
 ctm task "description" [timestr] [-c category]
-ctm task "description" [timestr] -r        # With 7-day reminder
-ctm task "description" [timestr] -r 14     # With 14-day reminder
-ctm task "description" [timestr] -p myapp  # With project association
+ctm task "description" [timestr] -P high        # High priority
+ctm task "description" [timestr] -e 2h          # 2 hour estimate
+ctm task "description" [timestr] --for sarah    # Assign to user
+ctm task "description" [timestr] -p myapp       # Link to project
+ctm task --from-issue owner/repo#42             # From GitHub issue
 ctm record "description" [-c category]
 ```
 
-**Reminder flag (-r):** Tasks appear in `/today` when within their reminder window, even if not yet due.
-
-**Project flag (-p):** Associate task with a project. Use `/work <index>` to open Claude in that project's directory.
-
-### Time Formats
-- Relative: `today`, `tomorrow`, `next week`, `in 3 days`
-- Absolute: `2024-01-15`, `jan 15`, `monday`
-- With time: `tomorrow 3pm`, `monday 9:00`
-- Recurring: `daily 9am`, `weekday 9am`, `weekly monday`, `monthly 1st`
+### Task Details
+```bash
+ctm show <index>                    # Full details
+ctm note <index> "note text"        # Add note
+ctm link <index> --issue repo#42    # Link issue
+ctm link <index> --pr repo#43       # Link PR
+ctm link <index> --commit abc123    # Link commit
+ctm claim <index>                   # Claim task
+```
 
 ### Listing
 ```bash
 ctm list task              # Open tasks
 ctm list task -s all       # All tasks
 ctm list task --overdue    # Include overdue
-ctm list task -d 7         # Due in 7 days
-ctm list task -c work      # Filter by category
+ctm list task -u sarah     # Sarah's tasks
+ctm list task --all-users  # Everyone's tasks
 ctm list record -d 7       # Records from past week
 ```
 
@@ -96,11 +119,35 @@ ctm list record -d 7       # Records from past week
 ```bash
 ctm done <index>                    # Complete task
 ctm done <index> -c "note"          # Complete with comment
+ctm done <index> --close-issue      # Complete + close GitHub issue
 ctm update <index> -t "tomorrow"    # Reschedule
-ctm update <index> -s cancelled     # Change status
-ctm update <index> -p myapp         # Assign to project
+ctm update <index> -P high          # Set priority
 ctm delete <index>                  # Delete item
 ```
+
+### Team & Users
+```bash
+ctm user create sarah -d "Sarah Chen"   # Create user
+ctm user list                           # List users
+ctm ns create backend                   # Create namespace
+ctm ns add-user backend sarah           # Add user to namespace
+ctm --as sarah list task                # Act as user
+ctm --ns backend list task              # Use namespace
+```
+
+### Reporting
+```bash
+ctm team                    # Task distribution
+ctm workload                # Hours per person
+ctm stats                   # Completion rates
+ctm stats --days 7          # Last week
+```
+
+### Time Formats
+- Relative: `today`, `tomorrow`, `next week`, `in 3 days`
+- Absolute: `2024-01-15`, `jan 15`, `monday`
+- With time: `tomorrow 3pm`, `monday 9:00`
+- Recurring: `daily 9am`, `weekday 9am`, `weekly monday`, `monthly 1st`
 
 ### Status Values
 | Status | Code | Description |
@@ -141,11 +188,17 @@ To use the `/work` command, define projects in `~/.config/ctm/config.json`:
 - `claude_flags`: Additional Claude CLI flags
 - `prompt_template`: Custom prompt template (use `{content}` for task content)
 
-**Usage:**
-```bash
-# Add task with project
-ctm task "Fix login bug" friday -p myapp
+## Recommended Hooks
 
-# Open Claude in project directory
-/work 3
+Add to your Claude Code settings for automatic task reminders:
+
+```json
+{
+  "hooks": {
+    "session_start": {
+      "command": "ctm list task --overdue -s open 2>/dev/null | head -5",
+      "show_output": true
+    }
+  }
+}
 ```
